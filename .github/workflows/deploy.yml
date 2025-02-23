@@ -38,7 +38,8 @@ jobs:
           docker push ${{ vars.ECR_REPO_APP }}:$GITHUB_SHA
           docker build --compress -t ${{ vars.ECR_REPO_PROXY }}:$GITHUB_SHA proxy/
           docker push ${{ vars.ECR_REPO_PROXY }}:$GITHUB_SHA
-          aws iam create-service-linked-role --aws-service-name rds.amazonaws.com || echo "Service-linked role already exists"
+          aws iam create-service-linked-role --aws-service-name rds.amazonaws.com || echo "RDS Service-linked role already exists"
+          aws iam create-service-linked-role --aws-service-name ecs.amazonaws.com || echo "ECS Service-linked role already exists"
 
       - name: Terraform Apply
         env:
@@ -53,5 +54,7 @@ jobs:
           cd infra/
           docker compose run --rm terraform -chdir=deploy/ init
           docker compose run --rm terraform -chdir=deploy/ workspace select -or-create $workspace
-          aws iam create-service-linked-role --aws-service-name rds.amazonaws.com || echo "Service-linked role already exists"
+          aws iam create-service-linked-role --aws-service-name rds.amazonaws.com || echo "RDS Service-linked role already exists"
+          aws iam create-service-linked-role --aws-service-name ecs.amazonaws.com || echo "ECS Service-linked role already exists"
+
           docker compose run --rm terraform -chdir=deploy/ apply -auto-approve
